@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find qb_move_description)/urdf/qb_move.materials.xacro"/>
+
+  <xacro:macro name="build_geometry" params="mesh_name mesh_scale:=^|.001">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://qb_move_description/meshes/${mesh_name}.stl" scale="${mesh_scale} ${mesh_scale} ${mesh_scale}"/>
+    </geometry>
+  </xacro:macro>
+
+  <xacro:macro name="build_joint" params="name *origin parent:=^ axis:=^ *dynamics *limits">
+    <joint name="${name}_joint" type="revolute">
+      <xacro:insert_block name="origin"/>
+      <parent link="${parent}_link"/>
+      <child link="${name}_link"/>
+      <axis xyz="${axis}"/>
+      <xacro:insert_block name="dynamics"/>
+      <xacro:insert_block name="limits"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="build_link" params="name type:=^ material:=^ **inertia">
+    <link name="${name}_link">
+      <inertial>
+        <xacro:insert_block name="inertia"/>
+      </inertial>
+      <xacro:if value="${use_meshes}">
+        <visual>
+          <xacro:qbmove.build_geometry mesh_name="${type}"/>
+          <material name="qb_move/${material}"/>
+        </visual>
+        <collision>
+          <xacro:qbmove.build_geometry mesh_name="${type}_collision"/>
+        </collision>
+      </xacro:if>
+    </link>
+  </xacro:macro>
+
+  <xacro:macro name="build_motor" params="name:=^ *origin parent:=^ axis:=^ *dynamics *limits type:=^ material:=^ *inertia">
+    <xacro:qbmove.build_joint name="${name}">
+      <xacro:insert_block name="origin"/>
+      <xacro:insert_block name="dynamics"/>
+      <xacro:insert_block name="limits"/>
+    </xacro:qbmove.build_joint>
+    <xacro:qbmove.build_link name="${name}">
+      <xacro:insert_block name="inertia"/>
+    </xacro:qbmove.build_link>
+  </xacro:macro>
+
+  <xacro:macro name="build_motor_from_yaml" params="yaml_file:=^ move_configuration:=^ name namespace:=^ type parent">
+    <xacro:qbmove.build_motor name="${namespace}_${name}" axis="${yaml_file[move_configuration][name]['axis']}" material="${type}">
+      <origin xyz="${yaml_file[move_configuration][name]['position']}"
+              rpy="${yaml_file[move_configuration][name]['orientation']}"/>
+      <dynamics damping="${yaml_file[move_configuration][name]['dynamics']['damping']}"
+                friction="${yaml_file[move_configuration][name]['dynamics']['friction']}"/>
+      <limit lower="${yaml_file[move_configuration][name]['limits']['lower']}"
+             upper="${yaml_file[move_configuration][name]['limits']['upper']}"
+             effort="${yaml_file[move_configuration][name]['limits']['effort']}"
+             velocity="${yaml_file[move_configuration][name]['limits']['velocity']}"/>
+      <inertial_group>
+        <mass value="${yaml_file[move_configuration][name]['inertial']['mass']}"/>
+        <origin xyz="${yaml_file[move_configuration][name]['inertial']['origin']}"/>
+        <inertia ixx="${yaml_file[move_configuration][name]['inertial']['inertia']['ixx']}"
+                 ixy="${yaml_file[move_configuration][name]['inertial']['inertia']['ixy']}"
+                 ixz="${yaml_file[move_configuration][name]['inertial']['inertia']['ixz']}"
+                 iyy="${yaml_file[move_configuration][name]['inertial']['inertia']['iyy']}"
+                 iyz="${yaml_file[move_configuration][name]['inertial']['inertia']['iyz']}"
+                 izz="${yaml_file[move_configuration][name]['inertial']['inertia']['izz']}"/>
+      </inertial_group>
+    </xacro:qbmove.build_motor>
+  </xacro:macro>
+
+  <xacro:macro name="build_fixed_structure" params="name:=^ type:=^ *origin parent:=^ *inertia">
+    <joint name="${name}_fixed_joint" type="fixed">
+      <xacro:insert_block name="origin"/>
+      <parent link="${parent}_link"/>
+      <child link="${name}_link"/>
+    </joint>
+    <xacro:qbmove.build_link name="${name}" type="${type}" material="${type}">
+      <xacro:insert_block name="inertia"/>
+    </xacro:qbmove.build_link>
+  </xacro:macro>
+
+  <xacro:macro name="build_fixed_structure_from_yaml" params="yaml_file:=^ move_configuration:=^ name namespace:=^ type parent">
+    <xacro:qbmove.build_displaced_fixed_structure_from_yaml name="${name}" type="${type}" parent="${parent}">
+      <origin xyz="${yaml_file[move_configuration][type]['position']}"
+              rpy="${yaml_file[move_configuration][type]['orientation']}"/>
+    </xacro:qbmove.build_displaced_fixed_structure_from_yaml>
+  </xacro:macro>
+
+  <xacro:macro name="build_displaced_fixed_structure_from_yaml" params="yaml_file:=^ move_configuration:=^ name namespace:=^ type parent *origin">
+    <xacro:qbmove.build_fixed_structure name="${namespace}_${name}">
+      <xacro:insert_block name="origin"/>
+      <inertial_group>
+        <mass value="${yaml_file[move_configuration][type]['inertial']['mass']}"/>
+        <origin xyz="${yaml_file[move_configuration][type]['inertial']['origin']}"/>
+        <inertia ixx="${yaml_file[move_configuration][type]['inertial']['inertia']['ixx']}"
+                 ixy="${yaml_file[move_configuration][type]['inertial']['inertia']['ixy']}"
+                 ixz="${yaml_file[move_configuration][type]['inertial']['inertia']['ixz']}"
+                 iyy="${yaml_file[move_configuration][type]['inertial']['inertia']['iyy']}"
+                 iyz="${yaml_file[move_configuration][type]['inertial']['inertia']['iyz']}"
+                 izz="${yaml_file[move_configuration][type]['inertial']['inertia']['izz']}"/>
+      </inertial_group>
+    </xacro:qbmove.build_fixed_structure>
+  </xacro:macro>
+
+  <xacro:macro name="build_virtual_mechanism" params="name:=^ parent:=^ *dynamics *limits">
+    <joint name="${name}_virtual_joint" type="revolute">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="${parent}_link"/>
+      <child link="${name}_virtual_link"/>
+      <axis xyz="0 0 1"/>
+      <xacro:insert_block name="dynamics"/>
+      <xacro:insert_block name="limits"/>
+    </joint>
+    <link name="${name}_virtual_link"/>
+  </xacro:macro>
+
+  <xacro:macro name="build_virtual_mechanism_from_yaml" params="name namespace:=^ parent">
+    <xacro:qbmove.build_virtual_mechanism name="${namespace}_${name}">
+      <dynamics damping="${yaml_file[move_configuration][name]['dynamics']['damping']}"
+                friction="${yaml_file[move_configuration][name]['dynamics']['friction']}"/>
+      <limit lower="${yaml_file[move_configuration][name]['limits']['lower']}"
+             upper="${yaml_file[move_configuration][name]['limits']['upper']}"
+             effort="${yaml_file[move_configuration][name]['limits']['effort']}"
+             velocity="${yaml_file[move_configuration][name]['limits']['velocity']}"/>
+    </xacro:qbmove.build_virtual_mechanism>
+  </xacro:macro>
+
+  <xacro:macro name="build_move_from_yaml" params="yaml_file move_configuration namespace parent *origin">
+    <xacro:qbmove.build_displaced_fixed_structure_from_yaml name="cube" type="cube" parent="${parent}">
+      <xacro:insert_block name="origin"/>
+    </xacro:qbmove.build_displaced_fixed_structure_from_yaml>
+    <xacro:qbmove.build_motor_from_yaml name="motor_1" type="motor" parent="${namespace}_cube"/>
+    <xacro:qbmove.build_motor_from_yaml name="motor_2" type="motor" parent="${namespace}_cube"/>
+    <xacro:qbmove.build_motor_from_yaml name="shaft" type="shaft" parent="${namespace}_cube"/>
+    <xacro:qbmove.build_virtual_mechanism_from_yaml name="stiffness_preset" parent="${namespace}_cube"/>
+  </xacro:macro>
+
+  <xacro:macro name="build_move_from_default_yaml" params="move_configuration:='qb_move' namespace parent *origin">
+    <xacro:property name="use_meshes" value="false"/>
+
+    <xacro:property name="yaml_filename" value="$(find qb_move_description)/config/default.yaml"/>
+    <xacro:property name="yaml_file" value="${load_yaml(yaml_filename)}"/>
+
+    <xacro:qbmove.build_move_from_yaml yaml_file="${yaml_file}" move_configuration="${move_configuration}" namespace="${namespace}" parent="${parent}">
+      <xacro:insert_block name="origin"/>
+    </xacro:qbmove.build_move_from_yaml>
+  </xacro:macro>
+
+</robot>

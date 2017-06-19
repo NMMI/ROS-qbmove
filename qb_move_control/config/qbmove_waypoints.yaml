@@ -1,0 +1,31 @@
+# Waypoints describe the desired motion trajectory:
+#  - time [s]: can be either a single value or an interval for which joint_positions hold
+#  - joint_positions: can be either (depending on the controller)
+#     - shaft position [radians] and stiffness preset [0,1];
+#     - motor_1 and motor_2 positions [radians].
+
+waypoints:
+  -
+    time: [1.0]
+    joint_positions:
+      qbmove: [0.0, 0.0]
+  -
+    time: [2.75, 3.25]
+    joint_positions:
+      qbmove: [1.57, 0.0]
+  -
+    time: [4.75, 5.25]
+    joint_positions:
+      qbmove: [1.57, 1.0]
+  -
+    time: [8.75, 9.25]
+    joint_positions:
+      qbmove: [-2.3, 1.0]
+  -
+    time: [10.75, 11.25]
+    joint_positions:
+      qbmove: [-2.87, 0.0]
+  -
+    time: [14.75, 15]
+    joint_positions:
+      qbmove: [0.0, 0.0]

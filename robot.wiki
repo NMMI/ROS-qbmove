@@ -1,0 +1,65 @@
+{{http://www.qbrobotics.com/wp-content/themes/qbrobotics/img/qbmove.svg|qbmove|width=755}}
+
+<<Version()>>
+{{{{#!wiki version kinetic
+
+= qbmove =
+''ROS Software Maintainer: [[http://www.qbrobotics.com|qbrobotics®]]''
+<<TOC(4)>>
+
+[[http://www.qbrobotics.com/products/qbmove-advanced/|qbmove]] is a '''muscle-like building block actuator''', small and lightweight, and based on the '''Variable Stiffness Actuation''' (VSA) principle, designed for constructing innovative robot structures and soft manipulators. It is unique in its ability to endow robots with Natural Motion, i.e. that resembles the elegance and deftness of human motion.
+
+The qbmove can be '''real-time tuned''' to be soft or rigid, depending on the given task. If the robot needs to guarantee safety during unpredictable impacts, it can be configured with a low stiffness value. On the contrary if precision is the main goal, a higher stiffness - i.e. non-soft beahavior - is required to follow a position trajectory with accuracy. Optimizing energy or speed performance can be achieved by alternating between soft and rigid settings during the whole motion.
+
+Its mechanical interface provides a single motor shaft mounted in the center of one of the 66mm-side faces of a 3D-stamped cube.
+
+== Installation ==
+<<TutorialChain(qb_move/Tutorials/qbmove ROS Packages Installation)>>
+
+== Usage ==
+=== Simulated qbmove ===
+{{{#!wiki caution
+The simulation package is still a work in progress. The ''qbmove'' will be ready to work with Gazebo as soon as possible!
+}}}
+{{{#!wiki comment
+<<TutorialChain(qb_move_gazebo/Tutorials/...)>>
+}}}
+
+=== Physical qbmove ===
+The ''qbmove'' can be used with several control modes explained in the following tutorials:
+
+<<TutorialChain(qb_move_control/Tutorials/qbmove GUI Control)>>
+
+== Demo Applications ==
+TODO: add video examples (GUI, waypoints)
+
+== ROS Packages Overview ==
+||<style="text-align:right">[[qb_device]]: ||[[qb_device_bringup]] | [[qb_device_control]] | [[qb_device_description]] | [[qb_device_driver]] | [[qb_device_hardware_interface]] | [[qb_device_msgs]] | [[qb_device_srvs]]||
+||<style="text-align:right">[[qb_move]]: ||[[qb_move_control]] | [[qb_move_description]] | [[qb_move_hardware_interface]]||
+
+== Support, Bugs and Contribution ==
+Since we are not only focused on this project it might happen that you encounter some trouble once in a while. Maybe we have just forget to think about your specific use case or we have not seen a terrible bug inside our code. In such a case, we are really sorry for the inconvenience and we will provide any support you need.
+
+To help you in the best way we can, we are asking you to do the most suitable of the following steps:
+
+ 1. It is the first time you are holding a ''qbmove'', or the first time you are using ROS, or even both: it is always a pleasure for us to solve your problems, but please consider first to read again the instructions above and the ROS tutorials. If you have ROS related questions the right place to ask is [[http://answers.ros.org/questions/|ROS Answers]].
+ 1. You are a beginner user stuck on something you completely don't know how to solve or you are experiencing unexpected behaviour: feel free to contact us at <<MailTo(support+ros@qbrobotics.com)>>, you will receive the specific support you need as fast as we can handle it.
+ 1. You are quite an expert user, everything has always worked fine, but now you have founded something strange and you don't know how to fix it: we will be glad if you open an Issue in the package of interest on [[https://bitbucket.org/account/user/qbrobotics/projects/ROS|our Bitbucket]].
+ 1. You are definitely an expert user, you have found a bug in our code and you have also correct it: it will be amazing if you open a Pull Request in the package of interest on [[https://bitbucket.org/account/user/qbrobotics/projects/ROS|our Bitbucket]]; we will merge it as soon as possible.
+ 1. You are comfortable with ''qbrobotics®'' products but you are wondering whether is possible to add some additional software features: feel free to open respectively an Issue or a Pull Request in the package of interest on [[https://bitbucket.org/account/user/qbrobotics/projects/ROS|our Bitbucket]], according to whether it is just an idea or you have already provided your solution.
+
+In any case, thank you for using ''[[http://www.qbrobotics.com|qbrobotics®]]'' solutions.
+
+== Purchase ==
+If you have just found out our company and you are interested in our products, come to [[http://www.qbrobotics.com|visit us]] and feel free to ask for a quote.
+
+== Roadmap ==
+Our journey through the ROS ecosystem has just started and we have already planned new midterm features to be implemented in the following months:
+
+ * Support for the most used ROS/Ubuntu distros
+ * CI an tests
+ * Gazebo ROS simulation
+
+}}}}
+
+## RobotOverview

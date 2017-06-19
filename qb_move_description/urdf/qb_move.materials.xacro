@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+	<material name="qb_move/optional">
+		<color rgba="0.4 0.4 0.4 1.0"/>
+	</material>
+
+	<material name="qb_move/cube">
+		<color rgba="0.4 0.4 0.4 1.0"/>
+	</material>
+
+	<material name="qb_move/shaft">
+		<color rgba="0.4 0.4 0.4 1.0"/>
+	</material>
+
+</robot>
