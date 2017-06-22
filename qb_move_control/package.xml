@@ -1,6 +1,6 @@
 <package format="2">
   <name>qb_move_control</name>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
   <description>
     This package contains the ROS control node for qbrobotics® qbmove device.
   </description>
