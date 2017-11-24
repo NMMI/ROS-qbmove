@@ -92,7 +92,7 @@ class qbMoveTransmission : public transmission_interface::Transmission {
    */
   inline void actuatorToJointEffort(const transmission_interface::ActuatorData& actuator, transmission_interface::JointData& joint) {
     ROS_ASSERT(numActuators() == actuator.effort.size() && numJoints() == joint.effort.size());
-    ROS_ASSERT(actuator.effort[0] && actuator.effort[1] && joint.effort[0] && joint.effort[1] && joint.effort[2] && joint.effort[3]);
+    ROS_ASSERT(actuator.effort[0] && actuator.effort[1] && actuator.effort[2] && joint.effort[0] && joint.effort[1] && joint.effort[2] && joint.effort[3]);
 
     *joint.effort[0] = *actuator.effort[0] * effort_factor_;  // motor_1_joint [A]
     *joint.effort[1] = *actuator.effort[1] * effort_factor_;  // motor_2_joint [A]
@@ -110,7 +110,7 @@ class qbMoveTransmission : public transmission_interface::Transmission {
    */
   inline void actuatorToJointVelocity(const transmission_interface::ActuatorData& actuator, transmission_interface::JointData& joint) {
     ROS_ASSERT(numActuators() == actuator.velocity.size() && numJoints() == joint.velocity.size());
-    ROS_ASSERT(actuator.velocity[0] && actuator.velocity[1] && joint.velocity[0] && joint.velocity[1] && joint.velocity[2] && joint.velocity[3]);
+    ROS_ASSERT(actuator.velocity[0] && actuator.velocity[1] && actuator.velocity[2] && joint.velocity[0] && joint.velocity[1] && joint.velocity[2] && joint.velocity[3]);
 
     // note: be aware that this method _misuses_ actuator.velocity to store the current measured velocity
     //   - *actuator.velocity[i] is the current measured velocity of the motor i in [ticks/s]
@@ -131,7 +131,7 @@ class qbMoveTransmission : public transmission_interface::Transmission {
    */
   inline void actuatorToJointPosition(const transmission_interface::ActuatorData& actuator, transmission_interface::JointData& joint) {
     ROS_ASSERT(numActuators() == actuator.position.size() && numJoints() == joint.position.size());
-    ROS_ASSERT(actuator.position[0] && actuator.position[1] && joint.position[0] && joint.position[1] && joint.position[2] && joint.position[3]);
+    ROS_ASSERT(actuator.position[0] && actuator.position[1] && actuator.position[2] && joint.position[0] && joint.position[1] && joint.position[2] && joint.position[3]);
 
     *joint.position[0] = *actuator.position[0] * position_factor_;  // motor_1_joint [radians]
     *joint.position[1] = *actuator.position[1] * position_factor_;  // motor_2_joint [radians]
@@ -174,7 +174,7 @@ class qbMoveTransmission : public transmission_interface::Transmission {
    */
   inline void jointToActuatorEffort(const transmission_interface::JointData& joint, transmission_interface::ActuatorData& actuator) {
     ROS_ASSERT(numActuators() == actuator.effort.size() && numJoints() == joint.effort.size());
-    ROS_ASSERT(actuator.effort[0] && actuator.effort[1] && joint.effort[0] && joint.effort[1] && joint.effort[2] && joint.effort[3]);
+    ROS_ASSERT(actuator.effort[0] && actuator.effort[1] && actuator.effort[2] && joint.effort[0] && joint.effort[1] && joint.effort[2] && joint.effort[3]);
 
     if (command_with_position_and_preset_) {
       // the qbmove cannot be controlled in current from shaft and preset info
@@ -200,7 +200,7 @@ class qbMoveTransmission : public transmission_interface::Transmission {
    */
   inline void jointToActuatorVelocity(const transmission_interface::JointData& joint, transmission_interface::ActuatorData& actuator) {
     ROS_ASSERT(numActuators() == actuator.velocity.size() && numJoints() == joint.velocity.size());
-    ROS_ASSERT(actuator.velocity[0] && actuator.velocity[1] && joint.velocity[0] && joint.velocity[1] && joint.velocity[2] && joint.velocity[3]);
+    ROS_ASSERT(actuator.velocity[0] && actuator.velocity[1] && actuator.velocity[2] && joint.velocity[0] && joint.velocity[1] && joint.velocity[2] && joint.velocity[3]);
 
     // the qbmove cannot be controlled in velocity
     *actuator.velocity[0] = 0.0;
@@ -218,7 +218,7 @@ class qbMoveTransmission : public transmission_interface::Transmission {
    */
   inline void jointToActuatorPosition(const transmission_interface::JointData& joint, transmission_interface::ActuatorData& actuator) {
     ROS_ASSERT(numActuators() == actuator.position.size() && numJoints() == joint.position.size());
-    ROS_ASSERT(actuator.position[0] && actuator.position[1] && joint.position[0] && joint.position[1] && joint.position[2] && joint.position[3]);
+    ROS_ASSERT(actuator.position[0] && actuator.position[1] && actuator.position[2] && joint.position[0] && joint.position[1] && joint.position[2] && joint.position[3]);
 
     if (command_with_position_and_preset_) {
       *actuator.position[0] = *joint.position[2] / position_factor_ + *joint.position[3] / preset_factor_;  // motor_1 = shaft + preset [ticks]
