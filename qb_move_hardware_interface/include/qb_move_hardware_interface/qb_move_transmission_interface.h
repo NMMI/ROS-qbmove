@@ -30,7 +30,6 @@
 
 #include <transmission_interface/transmission.h>
 #include <control_toolbox/filters.h>
-//TODO: switch to a more complete filter library (e.g. ros/filters)
 
 namespace qb_move_transmission_interface {
 /**
@@ -41,40 +40,29 @@ namespace qb_move_transmission_interface {
 class qbMoveTransmission : public transmission_interface::Transmission {
  public:
   /**
-   * Build the \em qbmove transmission with default velocity and effort scale factors (respectively \p 0.2 and \p 0.001),
-   * and retrieve the other scale factors from the Parameter Server. The position factor uses the private \p
-   * "~encoder_resolutions" param, following the formula \f$f_{pos} = \frac{\pi}{2^(2-encoder\_resolutions)}\f$ (if not
-   * found it uses the default resolution, which is \p 1); the preset factor uses the private \p "~preset_ticks_limit"
-   * param, following the formula \f$f_{pres} = \frac{1}{preset\_ticks\_limit}\f$ (if not found it uses the default
-   * limit, which is \p 3000 \em ticks). The control mode can be set to work either with motor positions or with shaft
-   * position and stiffness preset using the private parameter \p "~command_with_position_and_preset" (by default it
-   * is \p true).
+   * Build the \em qbmove transmission with default velocity and effort scale factors (respectively \p 0.2 and \p 0.001).
+   * The position scale factors (one value per each motor) are based on the "encoder resolutions", following the formula
+   * \f$f_{pos} = \frac{\pi}{2^(2-encoder\_resolution)}\f$. The default encoder resolutions are equal \p 1, but they
+   * can be modified during the execution with the proper method. The preset scale factor is based on the "stiffness
+   * preset limit" (expressed in \em ticks), which is the maximum stiffness value for the given qbrobotics device, and
+   * follows the formula \f$f_{pres} = \frac{1}{stiffness\_preset\_limit}\f$. The default maximum stiffness is set to
+   * \p 3000 ticks, but it can be modified during the execution with the proper method. Finally, the control mode can
+   * be set to work either with motor positions or with shaft position and stiffness preset; the default behavior is to
+   * use the "position and preset" controller, but it can be modified even during the execution with the proper method.
    */
   qbMoveTransmission()
-      : qbMoveTransmission(ros::param::param<bool>("~command_with_position_and_preset", true),
-                           M_PI/std::pow(2, 15-ros::param::param<int>("~encoder_resolutions", 1)),
-                           1./ros::param::param<int>("~preset_ticks_limit", 3000)) {}
-
-  /**
-   * Build the \em qbmove transmission with the given scale factors and the default velocity and effort scale factors
-   * (respectively \p 0.2 and \p 0.001).
-   * \param command_with_position_and_preset If \p true the controller exploits shaft position and stiffness preset.
-   * \param position_factor Motor position \em ticks to joint position \em radians \em scale factor.
-   * \param preset_factor Preset value \em ticks to preset percent value [\p 0, \p 1] scale factor.
-   */
-  qbMoveTransmission(const bool &command_with_position_and_preset, const double &position_factor, const double &preset_factor)
-      : qbMoveTransmission(command_with_position_and_preset, position_factor, preset_factor, 0.2, 0.001) {}
+      : qbMoveTransmission(true, std::vector<double>(3, M_PI/std::pow(2, 15-1)), 1./3000, 0.2, 0.001) {}
 
   /**
    *
    * Build the \em qbmove transmission with the given scale factors.
    * \param command_with_position_and_preset If \p true the controller exploits shaft position and stiffness preset.
-   * \param position_factor Motor position \em ticks to joint position \em radians \em scale factor.
+   * \param position_factor Motor position \em ticks to joint position \em radians \em scale factor vector.
    * \param preset_factor Preset value \em ticks to preset percent value [\p 0, \p 1] scale factor.
    * \param velocity_factor Exponential filter smoothing factor.
    * \param effort_factor Motor current \em mA to joint effort \em A scale factor.
    */
-  qbMoveTransmission(const bool &command_with_position_and_preset, const double &position_factor, const double &preset_factor, const double &velocity_factor, const double &effort_factor)
+  qbMoveTransmission(const bool &command_with_position_and_preset, const std::vector<double> &position_factor, const double &preset_factor, const double &velocity_factor, const double &effort_factor)
       : Transmission(),
         command_with_position_and_preset_(command_with_position_and_preset),
         position_factor_(position_factor),
@@ -115,9 +103,9 @@ class qbMoveTransmission : public transmission_interface::Transmission {
     // note: be aware that this method _misuses_ actuator.velocity to store the current measured velocity
     //   - *actuator.velocity[i] is the current measured velocity of the motor i in [ticks/s]
     //   - *joint.velocity[i] is the previous step velocity in [radians/s] or [percent/s]
-    *joint.velocity[0] = filters::exponentialSmoothing(*actuator.velocity[0] * position_factor_, *joint.velocity[0], velocity_factor_);  // motor_1_joint [radians/s]
-    *joint.velocity[1] = filters::exponentialSmoothing(*actuator.velocity[1] * position_factor_, *joint.velocity[1], velocity_factor_);  // motor_2_joint [radians/s]
-    *joint.velocity[2] = filters::exponentialSmoothing(*actuator.velocity[2] * position_factor_, *joint.velocity[2], velocity_factor_);  // shaft_joint [radians/s]
+    *joint.velocity[0] = filters::exponentialSmoothing(*actuator.velocity[0] * position_factor_.at(0), *joint.velocity[0], velocity_factor_);  // motor_1_joint [radians/s]
+    *joint.velocity[1] = filters::exponentialSmoothing(*actuator.velocity[1] * position_factor_.at(1), *joint.velocity[1], velocity_factor_);  // motor_2_joint [radians/s]
+    *joint.velocity[2] = filters::exponentialSmoothing(*actuator.velocity[2] * position_factor_.at(2), *joint.velocity[2], velocity_factor_);  // shaft_joint [radians/s]
     *joint.velocity[3] = (*joint.velocity[0] - *joint.velocity[1]) / 2;  // stiffness preset [percent/s]
   }
 
@@ -133,26 +121,31 @@ class qbMoveTransmission : public transmission_interface::Transmission {
     ROS_ASSERT(numActuators() == actuator.position.size() && numJoints() == joint.position.size());
     ROS_ASSERT(actuator.position[0] && actuator.position[1] && actuator.position[2] && joint.position[0] && joint.position[1] && joint.position[2] && joint.position[3]);
 
-    *joint.position[0] = *actuator.position[0] * position_factor_;  // motor_1_joint [radians]
-    *joint.position[1] = *actuator.position[1] * position_factor_;  // motor_2_joint [radians]
-    *joint.position[2] = *actuator.position[2] * position_factor_;  // shaft_joint [radians]
+    *joint.position[0] = *actuator.position[0] * position_factor_.at(0);  // motor_1_joint [radians]
+    *joint.position[1] = *actuator.position[1] * position_factor_.at(1);  // motor_2_joint [radians]
+    *joint.position[2] = *actuator.position[2] * position_factor_.at(2);  // shaft_joint [radians]
     *joint.position[3] = std::abs(*actuator.position[0] - *actuator.position[1]) * preset_factor_ / 2;  // stiffness_preset = abs(motor_1 - motor_2)/2 [percent 0,1]
   }
 
   /**
    * \return \p true if the controller exploits shaft position and stiffness preset.
    */
-  inline const double getCommandWithPoistionAndPreset() const { return command_with_position_and_preset_; }
+  inline const bool getCommandWithPoistionAndPreset() const { return command_with_position_and_preset_; }
 
   /**
    * \return The current position scale factor.
    */
-  inline const double getPositionFactor() const { return position_factor_; }
+  inline const std::vector<double> getPositionFactor() const { return position_factor_; }
 
   /**
    * \return The current preset scale factor.
    */
   inline const double getPresetFactor() const { return preset_factor_; }
+
+  /**
+   * \return The preset percent value to radians scale factor: \f$\frac{pos\_tick\_to\_rad}{preset_tick_to_percent}\f$.
+   */
+  inline const double getPresetPercentToRadians() const { return position_factor_.front()/preset_factor_; }
 
   /**
    * \return The current velocity scale factor.
@@ -221,13 +214,13 @@ class qbMoveTransmission : public transmission_interface::Transmission {
     ROS_ASSERT(actuator.position[0] && actuator.position[1] && actuator.position[2] && joint.position[0] && joint.position[1] && joint.position[2] && joint.position[3]);
 
     if (command_with_position_and_preset_) {
-      *actuator.position[0] = *joint.position[2] / position_factor_ + *joint.position[3] / preset_factor_;  // motor_1 = shaft + preset [ticks]
-      *actuator.position[1] = *joint.position[2] / position_factor_ - *joint.position[3] / preset_factor_;  // motor_2 = shaft - preset [ticks]
+      *actuator.position[0] = *joint.position[2] / position_factor_.at(2) + *joint.position[3] / preset_factor_;  // motor_1 = shaft + preset [ticks]
+      *actuator.position[1] = *joint.position[2] / position_factor_.at(2) - *joint.position[3] / preset_factor_;  // motor_2 = shaft - preset [ticks]
       *actuator.position[2] = 0.0;
     }
     else {  // direct motors control
-      *actuator.position[0] = *joint.position[0] / position_factor_;  // motor_1 = motor_1_command [ticks]
-      *actuator.position[1] = *joint.position[1] / position_factor_;  // motor_2 = motor_2_command [ticks]
+      *actuator.position[0] = *joint.position[0] / position_factor_.at(0);  // motor_1 = motor_1_command [ticks]
+      *actuator.position[1] = *joint.position[1] / position_factor_.at(1);  // motor_2 = motor_2_command [ticks]
       *actuator.position[2] = 0.0;
     }
   }
@@ -242,9 +235,30 @@ class qbMoveTransmission : public transmission_interface::Transmission {
    */
   inline std::size_t numJoints() const { return 4; }
 
+  /**
+   * \return \p true if the controller exploits shaft position and stiffness preset.
+   */
+  inline void setCommandWithPoistionAndPreset(const bool &command_with_position_and_preset) { command_with_position_and_preset_ = command_with_position_and_preset; }
+
+  /**
+   * \return The current position scale factor.
+   */
+  inline void setPositionFactor(const std::vector<int> &encoder_resolutions) {
+    ROS_ASSERT(numActuators() == position_factor_.size() && numActuators() == encoder_resolutions.size());
+    ROS_ASSERT(encoder_resolutions[0] == encoder_resolutions[1]);
+    for (int i=0; i< position_factor_.size(); i++) {
+      position_factor_.at(i) = M_PI/std::pow(2, 15-encoder_resolutions.at(i));
+    }
+  }
+
+  /**
+   * \return The current preset scale factor.
+   */
+  inline void setPresetFactor(const int &stiffness_preset_limit) { preset_factor_ = 1./stiffness_preset_limit; }
+
  private:
   bool command_with_position_and_preset_;
-  double position_factor_;
+  std::vector<double> position_factor_;
   double preset_factor_;
   double velocity_factor_;
   double effort_factor_;

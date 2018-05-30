@@ -31,11 +31,7 @@ using namespace qb_move_hardware_interface;
 
 qbMoveHW::qbMoveHW()
     : qbDeviceHW(std::make_shared<qb_move_transmission_interface::qbMoveTransmission>(), {"motor_1_joint", "motor_2_joint", "shaft_joint"}, {"motor_1_joint", "motor_2_joint", "shaft_joint", "stiffness_preset_virtual_joint"}) {
-  auto transmission(std::static_pointer_cast<qb_move_transmission_interface::qbMoveTransmission>(transmission_.getTransmission()));
-  command_with_position_and_preset_ = transmission->getCommandWithPoistionAndPreset();
-  position_ticks_to_radians_ = transmission->getPositionFactor();
-  preset_ticks_to_percent_ = transmission->getPresetFactor();
-  //TODO: check that encoder_resolutions has the same value of device_.encoder_resolutions (device_ cannot be retrieved before calling the base constructor which needs the transmission already setup...)
+
 }
 
 qbMoveHW::~qbMoveHW() {
@@ -49,13 +45,36 @@ std::vector<std::string> qbMoveHW::getJoints() {
   return {joints_.names.at(0), joints_.names.at(1)};
 }
 
+int qbMoveHW::getMaxStiffness() {
+  std::smatch match_row, match_value;
+  std::string device_info(getInfo());
+  if (std::regex_search(device_info, match_row, std::regex("Max stiffness: [[:digit:]]+"))) {
+    std::string max_stiffness(match_row[0]);
+    std::regex_search(max_stiffness, match_value, std::regex("[[:digit:]]+"));
+    return std::stoi(match_value[0]);
+  }
+  return 3000;  // default limit of stiffness value
+}
+
+bool qbMoveHW::init(ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw_nh) {
+  if (!qb_device_hardware_interface::qbDeviceHW::init(root_nh, robot_hw_nh)) {
+    return false;
+  }
+
+  // if the device interface initialization has succeed the device info have been retrieved
+  std::static_pointer_cast<qb_move_transmission_interface::qbMoveTransmission>(transmission_.getTransmission())->setPositionFactor(device_.encoder_resolutions);
+  std::static_pointer_cast<qb_move_transmission_interface::qbMoveTransmission>(transmission_.getTransmission())->setPresetFactor(getMaxStiffness());
+  command_with_position_and_preset_ = std::static_pointer_cast<qb_move_transmission_interface::qbMoveTransmission>(transmission_.getTransmission())->getCommandWithPoistionAndPreset();
+  return true;
+}
+
 void qbMoveHW::read(const ros::Time& time, const ros::Duration& period) {
   // read actuator state from the hardware (convert to proper measurement units)
   qb_device_hardware_interface::qbDeviceHW::read(time, period);
 }
 
 void qbMoveHW::updateShaftPositionLimits() {
-  double preset_percent_to_radians = position_ticks_to_radians_ / preset_ticks_to_percent_;
+  double preset_percent_to_radians(std::static_pointer_cast<qb_move_transmission_interface::qbMoveTransmission>(transmission_.getTransmission())->getPresetPercentToRadians());
   // the shaft limits [radians] depend on fixed motor limits [radians] and variable stiffness preset [0,1]
   joints_.limits.at(2).min_position = joints_.limits.at(0).min_position + std::abs(joints_.commands.at(3)*preset_percent_to_radians);
   joints_.limits.at(2).max_position = joints_.limits.at(0).max_position - std::abs(joints_.commands.at(3)*preset_percent_to_radians);
@@ -68,3 +87,5 @@ void qbMoveHW::write(const ros::Time& time, const ros::Duration& period) {
   // send actuator command to the hardware (saturate and convert to proper measurement units)
   qb_device_hardware_interface::qbDeviceHW::write(time, period);
 }
+
+PLUGINLIB_EXPORT_CLASS(qb_move_hardware_interface::qbMoveHW, hardware_interface::RobotHW)

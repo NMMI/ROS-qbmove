@@ -28,6 +28,9 @@
 #ifndef QB_MOVE_HARDWARE_INTERFACE_H
 #define QB_MOVE_HARDWARE_INTERFACE_H
 
+// ROS libraries
+#include <pluginlib/class_list_macros.hpp>
+
 // internal libraries
 #include <qb_device_hardware_interface/qb_device_hardware_interface.h>
 #include <qb_move_hardware_interface/qb_move_transmission_interface.h>
@@ -44,7 +47,7 @@ class qbMoveHW : public qb_device_hardware_interface::qbDeviceHW {
   /**
    * Initialize the \p qb_device_hardware_interface::qbDeviceHW with the specific transmission interface and actuator
    * and joint names.
-   * \sa qb_device_hardware_interface::qbDeviceHW(), qb_move_transmission_interface::qbMoveTransmission
+   * \sa qb_move_transmission_interface::qbMoveTransmission
    */
   qbMoveHW();
 
@@ -61,26 +64,39 @@ class qbMoveHW : public qb_device_hardware_interface::qbDeviceHW {
   std::vector<std::string> getJoints();
 
   /**
-   * Call the base \p qb_device_hardware_interface::read().
+   * Call the base method and nothing more.
+   * \param root_nh A NodeHandle in the root of the caller namespace.
+   * \param robot_hw_nh A NodeHandle in the namespace from which the RobotHW should read its configuration.
+   * \returns \p true on success.
+   */
+  bool init(ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw_nh);
+
+  /**
+   * Call the base method and nothing more.
    * \param time The current time.
    * \param period The time passed since the last call to this method, i.e. the control period.
-   * \sa qb_device_hardware_interface::read()
    */
   void read(const ros::Time& time, const ros::Duration& period);
 
   /**
-   * Update the shaft joint limits and call the base \p qb_device_hardware_interface::write(). The update is necessary
-   * since an increase of the variable stiffness decreases the shaft position limits, and vice versa.
+   * Update the shaft joint limits and call the base method. The update is necessary since an increase of the variable
+   * stiffness decreases the shaft position limits, and vice versa.
    * \param time The current time.
    * \param period The time passed since the last call to this method, i.e. the control period.
-   * \sa qb_device_hardware_interface::write(), updateShaftPositionLimits()
+   * \sa updateShaftPositionLimits()
    */
   void write(const ros::Time& time, const ros::Duration& period);
 
  private:
   bool command_with_position_and_preset_;
-  double position_ticks_to_radians_;
-  double preset_ticks_to_percent_;
+
+  /**
+   * Parse the maximum value of stiffness of the device from the getInfo string.
+   * Actually it would be better to retrieve it as a firmware parameter, but it is not supported in old firmwares.
+   * \return The parsed max value of stiffness.
+   * \sa qb_device_hardware_interface::qbDeviceHW::getInfo()
+   */
+  virtual int getMaxStiffness();
 
   /**
    * Update the shaft joint limits since they depend on the fixed motors limits and on the variable stiffness preset.

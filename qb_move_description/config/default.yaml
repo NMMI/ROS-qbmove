@@ -9,10 +9,11 @@
 # Brief description:
 # * The `default` group holds the anchors for the common default settings, i.e. avoid annoying repetitions.
 # * The `qb_move` group contains the current properties to build the URDF correctly.
+# * The `flanges` group holds the anchors for the common settings for the mounting flanges.
 
 default:
   parameters:
-    axis: &axis "0 0 1"
+    axis: &axis "0 1 0"
     dynamics: &dynamics
       damping: 0.0
       friction: 0.0
@@ -25,6 +26,8 @@ default:
       velocity: *velocity
 
   cube: &cube
+    mesh: ""
+    mesh_collision: ""
     position: "0 0 0"
     orientation: "0 0 0"
     inertial:
@@ -38,7 +41,25 @@ default:
         iyz: 0.0
         izz: 0.001
 
+  flange: &flange
+    mesh: ""
+    mesh_collision: ""
+    position: "0 0 0"
+    orientation: "0 0 0"
+    inertial:
+      mass: 0.0
+      origin: "0.0 0.0 0.0"
+      inertia:
+        ixx: 0.0
+        ixy: 0.0
+        ixz: 0.0
+        iyy: 0.0
+        iyz: 0.0
+        izz: 0.0
+
   motor: &motor
+    mesh: ""
+    mesh_collision: ""
     position: "0 0 0"
     orientation: "0 0 0"
     axis: *axis
@@ -56,6 +77,8 @@ default:
         izz: 0.000003
 
   shaft: &shaft
+    mesh: ""
+    mesh_collision: ""
     position: "0 0 0"
     orientation: "0 0 0"
     axis: *axis
@@ -73,6 +96,8 @@ default:
         izz: 0.000023
 
   stiffness_preset: &stiffness_preset
+    mesh: ""
+    mesh_collision: ""
     dynamics: *dynamics
     limits:
       lower: 0.0
@@ -81,21 +106,77 @@ default:
       velocity: *velocity
 
 
-qb_move:
+qbmove:
   cube:
     << : *cube
+    mesh: "qbmove_frame"
+    mesh_collision: "qbmove_frame_collision"
 
   motor_1:
     << : *motor
-    position: "0.04 0.04 0.02"
+    position: "0.02 0.02 0.02"
 
   motor_2:
     << : *motor
-    position: "-0.04 -0.04 0.02"
+    position: "-0.02 -0.02 0.02"
 
   shaft:
     << : *shaft
-    position: "0 0 0.09"
+    mesh: "qbmove_pulley"
+    mesh_collision: "qbmove_pulley_collision"
+    position: "0 0 0.056"
+    orientation: "1.57 0 0"
 
   stiffness_preset:
     << : *stiffness_preset
+
+
+flanges:
+  base_flange:
+    << : *flange
+    mesh: "qb_base_flange"
+    mesh_collision: "qb_base_flange_collision"
+    position: "0 0 0"
+    orientation: "0 0 0"
+
+  flat_flange:
+    << : *flange
+    mesh: "qb_flat_flange"
+    mesh_collision: "qb_flat_flange_collision"
+    position: "0 0.0225 0"
+    orientation: "-1.57 0 0"
+
+  double_flat_flange:
+    << : *flange
+    mesh: "qb_double_flat_flange"
+    mesh_collision: "qb_double_flat_flange_collision"
+    position: "0 0 0"
+    orientation: "0 0 0"
+
+  c_flange_plate:
+    << : *flange
+    mesh: "qb_c_flange"
+    mesh_collision: "qb_c_flange_collision"
+    position: "0 0 0"
+    orientation: "0 0 0"
+
+  c_flange_axis:
+    << : *flange
+    mesh: "qb_c_flange"
+    mesh_collision: "qb_c_flange_collision"
+    position: "0 -0.024 0.056"
+    orientation: "0 0 1.57"
+
+  finger_down:
+    << : *flange
+    mesh: "qbmove_finger_down"
+    mesh_collision: "qbmove_finger_down_collision"
+    position: "0 -0.033 0.033"
+    orientation: "0 1.57 1.57"
+
+  finger_up:
+    << : *flange
+    mesh: "qbmove_finger_up"
+    mesh_collision: "qbmove_finger_up_collision"
+    position: "0 0.0165 0"
+    orientation: "-1.57 0 0"
