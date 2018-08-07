@@ -2,6 +2,9 @@
 Changelog for package qb_move_hardware_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.1 (2018-08-07)
+------------------
+
 2.0.0 (2018-05-30)
 ------------------
 * Refactor transmission initialization

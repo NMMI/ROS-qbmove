@@ -99,7 +99,7 @@ The Communication Handler Node has no parameters to be set, therefore it is alwa
 roslaunch qb_device_driver communication_handler.launch
 ```
 
-On start, it scans the serial communication resources connected to you system and shows a list of the devices it has found. By default it never scans again for new devices, apart from asking it explicitly during the initialization of a control Node.
+On start, it scans the serial communication resources connected to your system and shows a list of the devices it has found. By default, it never scans again for new devices, apart from asking it explicitly during the initialization of a control Node.
 
 This is a simple example when starting the Communication Handler with two _qbrobotics®_ devices connected on two distinct USB ports:
 ```
@@ -124,19 +124,19 @@ Regardless the control mode chosen for the given application, and apart form a c
 ![overview_launch](qb_move_media/overview_launch.svg)
 
 ### Control Modes
-For the sake of simplicity, we are going to cover all the control modes for a single _qbmove_, but it is just a matter of putting things together and set the launch file parameters properly to control several devices together ([qb_chain_control](http://wiki.ros.org/qb_move_control) is dedicated for such a scope). 
+For the sake of simplicity, we are going to cover all the control modes for a single _qbmove_, but it is just a matter of putting things together and set the launch file parameters properly to control several devices together ([qb_chain_control](http://wiki.ros.org/qb_chain_control) is dedicated for such a scope). 
 
-All the control modes are initialized in the same manner but with distinct command line arguments. The default single-device control Node which brings everything up and simply waits for commands on the above mentioned Action topic is the following:
+All the control modes are initialized in the same manner but with distinct command line arguments. The default single-device control Node which brings everything up and simply waits for commands on the above-mentioned Action topic is the following:
 ```
-roslaunch qb_move_control control.launch standalone:=true activation_on_initialization:=true device_id:=<actual_device_id>
+roslaunch qb_move_control control.launch standalone:=true activate_on_initialization:=true device_id:=<actual_device_id>
 ```
 
 ###### The arguments explained
-- `activation_on_initialization [false]`: Activates the motors at startup (the device will not move since the first command reference is received).
+- `activate_on_initialization [false]`: Activates the motors at startup (the device will not move since the first command reference is received).
 - `device_id [1]`: Each device has its own ID, you need to set the one of the actual device connect to your system. 
 - `standalone [false]`: Starts the Communication Handler together with the control Node. If you set this to `false` (or remove it since the default value is `false`), you need to launch the Communication Handler in a separate terminal.
 
-It is worth noting that the activation of the motors can be postponed to improved safety if you are not aware of the state of the system at startup. To do so just set `activation_on_initialization:=false` (or remove it since the default value is `false`) and make a call to the Communication Handler `activate_motors` Service, when your system is ready, e.g. as follows:
+It is worth noting that the activation of the motors can be postponed to improved safety if you are not aware of the state of the system at startup. To do so just set `activate_on_initialization:=false` (or remove it since the default value is `false`) and make a call to the Communication Handler `activate_motors` Service, when your system is ready, e.g. as follows:
 ```
 rosservice call /communication_handler/activate_motors {"id: <actual_device_id>, max_repeats: 0"}
 ```
@@ -145,11 +145,11 @@ rosservice call /communication_handler/activate_motors {"id: <actual_device_id>,
 - `control_duration [0.01]`: The duration of the control loop expressed in seconds.
 - `get_currents [true]`: Choose whether or not to retrieve current measurements from the device.
 - `get_positions [true]`: Choose whether or not to retrieve position measurements from the device.
-- `get_distinct_packages [false]`: Choose whether or not to retrieve current and position measurements from the device in two distinct packages.
+- `get_distinct_packages [true]`: Choose whether or not to retrieve current and position measurements from the device in two distinct packages.
 - `max_repeats [3]`: The maximum number of consecutive repetitions to mark retrieved data as corrupted.
 - `set_commands [true]`: Choose whether or not to send command positions to the device.
-- `set_commands_async [false]`: Choose whether or not to send commands without waiting for ack.
-- `use_rviz [true]`: Choose whether or not to use rviz. If enabled you should see a virtual _qbmove_ on screen performing a similar behavior, i.e. moving the shaft and both the actuators accordingly.
+- `set_commands_async [true]`: Choose whether or not to send commands without waiting for ack.
+- `use_rviz [false]`: Choose whether or not to use rviz. If enabled you should see a virtual _qbmove_ on screen performing a similar behavior, i.e. moving the shaft and both the actuators accordingly.
 
 The followings are particular control modes which are enabled with few parameters, but the concepts of this paragraph hold for all of them.
 
@@ -214,7 +214,7 @@ waypoints:
 #### 3. API Control
 If you need a complex (i.e. real) control application, e.g. the _qbmove_ is mounted on a robot which uses computer vision aid to grasp objects, the previous two control modes don't really help much. What we provide for real applications is the full ROS libraries to manage and control the _qbmove_.
 
-You have to dig into the [qb_move](http://wiki.ros.org/qb_move) package documentation and find what better suite for your needs, e.g. extend the `qbDeviceControl` class provided, or even redesign some of its parts by following an approach similar to ours.
+You have to dig into the [qb_move](http://wiki.ros.org/qb_move) package documentation and find what better suits for your needs, e.g. extend the `qbDeviceControl` class provided, or even redesign some of its parts by following an approach similar to ours.
 
 >Our recommendation is to use as much as possible our resources, classes and macros to help you while developing your application. Don't reinvent the wheel!
 
