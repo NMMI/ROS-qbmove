@@ -3,10 +3,10 @@
 
   <xacro:include filename="$(find qb_move_description)/urdf/qbmove.materials.xacro"/>
 
-  <xacro:macro name="build_geometry" params="mesh_name mesh_scale:=^|.001">
+  <xacro:macro name="build_geometry" params="path:=^|'qb_move' mesh_name mesh_scale:=^|.001">
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <geometry>
-      <mesh filename="package://qb_move_description/meshes/${mesh_name}.stl" scale="${mesh_scale} ${mesh_scale} ${mesh_scale}"/>
+      <mesh filename="package://${path}_description/meshes/${mesh_name}.stl" scale="${mesh_scale} ${mesh_scale} ${mesh_scale}"/>
     </geometry>
   </xacro:macro>
 
@@ -131,11 +131,20 @@
     </xacro:qbmove.build_virtual_mechanism>
   </xacro:macro>
 
-  <xacro:macro name="build_flange_from_yaml" params="filename:='default' configuration:='flanges' flange namespace parent">
-    <xacro:property name="yaml_filename" value="$(find qb_move_description)/config/${filename}.yaml"/>
+  <xacro:macro name="build_flange_from_yaml" params="path:='qb_move' filename:='default' configuration:='flanges' flange namespace parent type:='flange'">
+    <xacro:property name="yaml_filename" value="$(find ${path}_description)/config/${filename}.yaml"/>
     <xacro:property name="yaml_file" value="${load_yaml(yaml_filename)}"/>
 
-    <xacro:qbmove.build_fixed_structure_from_yaml name="${flange}" type="flange" parent="${parent}"/>
+    <xacro:qbmove.build_fixed_structure_from_yaml name="${flange}" type="${type}" parent="${parent}"/>
+  </xacro:macro>
+
+  <xacro:macro name="build_displaced_flange_from_yaml" params="path:='qb_move' filename:='default' configuration:='flanges' flange namespace parent *origin type:='flange'">
+    <xacro:property name="yaml_filename" value="$(find ${path}_description)/config/${filename}.yaml"/>
+    <xacro:property name="yaml_file" value="${load_yaml(yaml_filename)}"/>
+
+    <xacro:qbmove.build_displaced_fixed_structure_from_yaml name="${flange}" type="${type}" parent="${parent}">
+      <xacro:insert_block name="origin"/>
+    </xacro:qbmove.build_displaced_fixed_structure_from_yaml>
   </xacro:macro>
 
   <xacro:macro name="build_move_from_yaml" params="filename:='default' configuration:='qbmove' namespace parent *origin">

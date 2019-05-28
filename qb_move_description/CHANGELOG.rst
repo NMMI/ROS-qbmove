@@ -2,6 +2,11 @@
 Changelog for package qb_move_description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.0 (2019-05-28)
+------------------
+* Fix description values
+* Fix utilities to build delta URDF easily
+
 2.0.2 (2018-08-09)
 ------------------
 

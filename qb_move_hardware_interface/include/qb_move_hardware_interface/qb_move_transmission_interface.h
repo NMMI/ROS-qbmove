@@ -78,7 +78,7 @@ class qbMoveTransmission : public transmission_interface::Transmission {
    * and must point to valid data, at least for the used fields, i.e. it is not required that all other data vectors
    * contain valid data; they can even remain empty.
    */
-  inline void actuatorToJointEffort(const transmission_interface::ActuatorData& actuator, transmission_interface::JointData& joint) {
+  inline void actuatorToJointEffort(const transmission_interface::ActuatorData &actuator, transmission_interface::JointData &joint) {
     ROS_ASSERT(numActuators() == actuator.effort.size() && numJoints() == joint.effort.size());
     ROS_ASSERT(actuator.effort[0] && actuator.effort[1] && actuator.effort[2] && joint.effort[0] && joint.effort[1] && joint.effort[2] && joint.effort[3]);
 
@@ -96,7 +96,7 @@ class qbMoveTransmission : public transmission_interface::Transmission {
    * and must point to valid data, at least for the used fields, i.e. it is not required that all other data vectors
    * contain valid data; they can even remain empty.
    */
-  inline void actuatorToJointVelocity(const transmission_interface::ActuatorData& actuator, transmission_interface::JointData& joint) {
+  inline void actuatorToJointVelocity(const transmission_interface::ActuatorData &actuator, transmission_interface::JointData &joint) {
     ROS_ASSERT(numActuators() == actuator.velocity.size() && numJoints() == joint.velocity.size());
     ROS_ASSERT(actuator.velocity[0] && actuator.velocity[1] && actuator.velocity[2] && joint.velocity[0] && joint.velocity[1] && joint.velocity[2] && joint.velocity[3]);
 
@@ -117,7 +117,7 @@ class qbMoveTransmission : public transmission_interface::Transmission {
    * and must point to valid data, at least for the used fields, i.e. it is not required that all other data vectors
    * contain valid data; they can even remain empty.
    */
-  inline void actuatorToJointPosition(const transmission_interface::ActuatorData& actuator, transmission_interface::JointData& joint) {
+  inline void actuatorToJointPosition(const transmission_interface::ActuatorData &actuator, transmission_interface::JointData &joint) {
     ROS_ASSERT(numActuators() == actuator.position.size() && numJoints() == joint.position.size());
     ROS_ASSERT(actuator.position[0] && actuator.position[1] && actuator.position[2] && joint.position[0] && joint.position[1] && joint.position[2] && joint.position[3]);
 
@@ -165,7 +165,7 @@ class qbMoveTransmission : public transmission_interface::Transmission {
    * and must point to valid data, at least for the used fields, i.e. it is not required that all other data vectors
    * contain valid data; they can even remain empty.
    */
-  inline void jointToActuatorEffort(const transmission_interface::JointData& joint, transmission_interface::ActuatorData& actuator) {
+  inline void jointToActuatorEffort(const transmission_interface::JointData &joint, transmission_interface::ActuatorData &actuator) {
     ROS_ASSERT(numActuators() == actuator.effort.size() && numJoints() == joint.effort.size());
     ROS_ASSERT(actuator.effort[0] && actuator.effort[1] && actuator.effort[2] && joint.effort[0] && joint.effort[1] && joint.effort[2] && joint.effort[3]);
 
@@ -191,7 +191,7 @@ class qbMoveTransmission : public transmission_interface::Transmission {
    * and must point to valid data, at least for the used fields, i.e. it is not required that all other data vectors
    * contain valid data; they can even remain empty.
    */
-  inline void jointToActuatorVelocity(const transmission_interface::JointData& joint, transmission_interface::ActuatorData& actuator) {
+  inline void jointToActuatorVelocity(const transmission_interface::JointData &joint, transmission_interface::ActuatorData &actuator) {
     ROS_ASSERT(numActuators() == actuator.velocity.size() && numJoints() == joint.velocity.size());
     ROS_ASSERT(actuator.velocity[0] && actuator.velocity[1] && actuator.velocity[2] && joint.velocity[0] && joint.velocity[1] && joint.velocity[2] && joint.velocity[3]);
 
@@ -209,19 +209,19 @@ class qbMoveTransmission : public transmission_interface::Transmission {
    * and must point to valid data, at least for the used fields, i.e. it is not required that all other data vectors
    * contain valid data; they can even remain empty.
    */
-  inline void jointToActuatorPosition(const transmission_interface::JointData& joint, transmission_interface::ActuatorData& actuator) {
+  inline void jointToActuatorPosition(const transmission_interface::JointData &joint, transmission_interface::ActuatorData &actuator) {
     ROS_ASSERT(numActuators() == actuator.position.size() && numJoints() == joint.position.size());
     ROS_ASSERT(actuator.position[0] && actuator.position[1] && actuator.position[2] && joint.position[0] && joint.position[1] && joint.position[2] && joint.position[3]);
 
     if (command_with_position_and_preset_) {
       *actuator.position[0] = *joint.position[2] / position_factor_.at(2) + *joint.position[3] / preset_factor_;  // motor_1 = shaft + preset [ticks]
       *actuator.position[1] = *joint.position[2] / position_factor_.at(2) - *joint.position[3] / preset_factor_;  // motor_2 = shaft - preset [ticks]
-      *actuator.position[2] = 0.0;
+      *actuator.position[2] = *joint.position[2] / position_factor_.at(2);
     }
     else {  // direct motors control
       *actuator.position[0] = *joint.position[0] / position_factor_.at(0);  // motor_1 = motor_1_command [ticks]
       *actuator.position[1] = *joint.position[1] / position_factor_.at(1);  // motor_2 = motor_2_command [ticks]
-      *actuator.position[2] = 0.0;
+      *actuator.position[2] = (*joint.position[0] / position_factor_.at(0) + *joint.position[1] / position_factor_.at(1))/2;
     }
   }
 

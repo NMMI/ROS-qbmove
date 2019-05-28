@@ -171,12 +171,12 @@ flanges:
     << : *flange
     mesh: "qbmove_finger_down"
     mesh_collision: "qbmove_finger_down_collision"
-    position: "0 -0.033 0.033"
-    orientation: "0 1.57 1.57"
+    position: "-0.033 0 0.033"
+    orientation: "1.57 1.57 1.57"
 
   finger_up:
     << : *flange
     mesh: "qbmove_finger_up"
     mesh_collision: "qbmove_finger_up_collision"
     position: "0 0.0165 0"
-    orientation: "-1.57 0 0"
+    orientation: "-1.57 -1.57 0"

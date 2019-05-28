@@ -34,6 +34,7 @@
 // internal libraries
 #include <qb_device_hardware_interface/qb_device_hardware_interface.h>
 #include <qb_move_hardware_interface/qb_move_transmission_interface.h>
+#include <qb_move_hardware_interface/qb_move_interactive_interface.h>
 
 namespace qb_move_hardware_interface {
 /**
@@ -54,29 +55,29 @@ class qbMoveHW : public qb_device_hardware_interface::qbDeviceHW {
   /**
    * Do nothing.
    */
-  virtual ~qbMoveHW();
+  ~qbMoveHW() override;
 
   /**
    * Return the shaft position and stiffness preset joints whether \p command_with_position_and_preset_ is \p true; the
    * motors joints otherwise.
    * \return The vector of controller joint names.
    */
-  std::vector<std::string> getJoints();
+  std::vector<std::string> getJoints() override;
 
   /**
    * Call the base method and nothing more.
    * \param root_nh A NodeHandle in the root of the caller namespace.
    * \param robot_hw_nh A NodeHandle in the namespace from which the RobotHW should read its configuration.
-   * \returns \p true on success.
+   * \return \p true on success.
    */
-  bool init(ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw_nh);
+  bool init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_hw_nh) override;
 
   /**
    * Call the base method and nothing more.
    * \param time The current time.
    * \param period The time passed since the last call to this method, i.e. the control period.
    */
-  void read(const ros::Time& time, const ros::Duration& period);
+  void read(const ros::Time &time, const ros::Duration &period) override;
 
   /**
    * Update the shaft joint limits and call the base method. The update is necessary since an increase of the variable
@@ -85,10 +86,16 @@ class qbMoveHW : public qb_device_hardware_interface::qbDeviceHW {
    * \param period The time passed since the last call to this method, i.e. the control period.
    * \sa updateShaftPositionLimits()
    */
-  void write(const ros::Time& time, const ros::Duration& period);
+  void write(const ros::Time &time, const ros::Duration &period) override;
 
  private:
+  qb_move_interactive_interface::qbMoveInteractive interactive_interface_;
   bool command_with_position_and_preset_;
+  bool use_interactive_markers_;
+  double position_ticks_to_radians_;
+  double preset_percent_to_radians_;
+  double max_motor_limits_;
+  double min_motor_limits_;
 
   /**
    * Parse the maximum value of stiffness of the device from the getInfo string.
@@ -96,7 +103,7 @@ class qbMoveHW : public qb_device_hardware_interface::qbDeviceHW {
    * \return The parsed max value of stiffness.
    * \sa qb_device_hardware_interface::qbDeviceHW::getInfo()
    */
-  virtual int getMaxStiffness();
+  int getMaxStiffness();
 
   /**
    * Update the shaft joint limits since they depend on the fixed motors limits and on the variable stiffness preset.
