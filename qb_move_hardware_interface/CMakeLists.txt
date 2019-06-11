@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
-project(qb_move_hardware_interface VERSION 2.1.1 LANGUAGES CXX)
+project(qb_move_hardware_interface VERSION 2.1.2 LANGUAGES CXX)
 
 # Dependency Settings
 find_package(catkin REQUIRED
@@ -8,6 +8,7 @@ find_package(catkin REQUIRED
     control_toolbox
     interactive_markers
     tf2
+    tf2_geometry_msgs
     transmission_interface
     qb_device_hardware_interface
 )
@@ -26,6 +27,7 @@ catkin_package(
     control_toolbox
     interactive_markers
     tf2
+    tf2_geometry_msgs
     transmission_interface
     qb_device_hardware_interface
 )
