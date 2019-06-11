@@ -2,6 +2,10 @@
 Changelog for package qb_move_hardware_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.1 (2019-06-11)
+------------------
+* Fix dependencies
+
 2.1.0 (2019-05-28)
 ------------------
 * Fix minor style issues

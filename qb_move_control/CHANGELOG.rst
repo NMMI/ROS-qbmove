@@ -2,6 +2,9 @@
 Changelog for package qb_move_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.1 (2019-06-11)
+------------------
+
 2.1.0 (2019-05-28)
 ------------------
 * Add an interactive marker to control the device
